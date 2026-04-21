@@ -1,0 +1,12 @@
+{
+  "id": "okx-trade-tg-miniapp",
+  "name": "OKX Trade TG Mini App",
+  "description": "Telegram Mini App for OKX market data and personal positions. Runs inside the openclaw gateway; frontend fronted by Cloudflare Tunnel.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": { "type": "boolean" }
+    }
+  }
+}

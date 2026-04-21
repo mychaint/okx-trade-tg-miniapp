@@ -1,0 +1,16 @@
+{
+  "name": "okx-trade-tg-miniapp",
+  "version": "0.0.1",
+  "description": "Telegram Mini App plugin for OKX trading dashboards inside openclaw.",
+  "type": "module",
+  "main": "src/index.js",
+  "license": "MIT",
+  "openclaw": {
+    "extensions": [
+      "./src/index.js"
+    ]
+  },
+  "peerDependencies": {
+    "@okx_ai/okx-trade-cli": "*"
+  }
+}
