@@ -54,5 +54,31 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
         writeJson(res, 200, { ok: true, data });
       }),
     },
+    {
+      path: `${basePath}/ticker`,
+      handler: runWithInvoker(async (req, res) => {
+        const q = parseQuery(req.url);
+        const instId = q.get("instId");
+        if (!instId) {
+          writeJson(res, 400, { ok: false, error: "missing_param", message: "instId is required" });
+          return;
+        }
+        const data = await invoker(["market", "ticker", instId]);
+        writeJson(res, 200, { ok: true, data });
+      }),
+    },
+    {
+      path: `${basePath}/tickers`,
+      handler: runWithInvoker(async (req, res) => {
+        const q = parseQuery(req.url);
+        const instType = q.get("instType");
+        if (!instType || !VALID_INST_TYPES.has(instType)) {
+          writeJson(res, 400, { ok: false, error: "invalid_param", message: "instType must be SPOT|SWAP|FUTURES|OPTION" });
+          return;
+        }
+        const data = await invoker(["market", "tickers", "--instType", instType]);
+        writeJson(res, 200, { ok: true, data });
+      }),
+    },
   ];
 }

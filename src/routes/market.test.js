@@ -56,3 +56,47 @@ test("GET /api/market/instruments rejects unknown instType with 400", async () =
   await route.handler(fakeReq("/api/market/instruments?instType=XYZ"), res);
   assert.equal(res.statusCode, 400);
 });
+
+test("GET /api/market/ticker?instId=BTC-USDT calls okx market ticker", async () => {
+  const calls = [];
+  const invoker = async (args) => { calls.push(args); return [{ last: "70000" }]; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker?instId=BTC-USDT"), res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calls, [["market", "ticker", "BTC-USDT"]]);
+});
+
+test("GET /api/market/ticker requires instId", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker"), res);
+  assert.equal(res.statusCode, 400);
+});
+
+test("GET /api/market/tickers?instType=SPOT calls okx market tickers", async () => {
+  const calls = [];
+  const invoker = async (args) => { calls.push(args); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/tickers");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/tickers?instType=SPOT"), res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calls, [["market", "tickers", "--instType", "SPOT"]]);
+});
+
+test("GET /api/market/ticker surfaces OKX errors as 502", async () => {
+  const { OkxCliError } = await import("../okx/invoke.js");
+  const invoker = async () => { throw new OkxCliError("okx exited with code 1", { exitCode: 1, stderr: "bad symbol" }); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker?instId=BOGUS"), res);
+  assert.equal(res.statusCode, 502);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, false);
+  assert.equal(body.error, "okx_cli_error");
+});
