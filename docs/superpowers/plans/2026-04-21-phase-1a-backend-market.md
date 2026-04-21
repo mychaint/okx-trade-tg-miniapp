@@ -136,7 +136,7 @@ export async function invokeOkx(args, {
     proc.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
     proc.on("error", (err) => {
       clearTimeout(timer);
-      reject(new OkxCliError(`failed to spawn okx: ${err.message}`));
+      reject(new OkxCliError(`failed to spawn okx: ${err.message}`, { stderr }));
     });
     proc.on("close", (code) => {
       clearTimeout(timer);
