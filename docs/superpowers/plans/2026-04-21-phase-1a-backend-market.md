@@ -218,6 +218,31 @@ test("invokeOkx passes --profile and --demo flags through", async () => {
     "market", "ticker", "BTC-USDT",
   ]);
 });
+
+test("invokeOkx passes --live flag when demo is false", async () => {
+  let capturedArgs = null;
+  const capturingSpawn = (_cmd, args) => {
+    capturedArgs = args;
+    return fakeSpawn({ stdout: "[]" })();
+  };
+  await invokeOkx(["market", "ticker", "BTC-USDT"], {
+    demo: false,
+    spawnImpl: capturingSpawn,
+  });
+  assert.deepEqual(capturedArgs, ["--live", "--json", "market", "ticker", "BTC-USDT"]);
+});
+
+test("invokeOkx emits neither --demo nor --live when demo is undefined", async () => {
+  let capturedArgs = null;
+  const capturingSpawn = (_cmd, args) => {
+    capturedArgs = args;
+    return fakeSpawn({ stdout: "[]" })();
+  };
+  await invokeOkx(["market", "ticker", "BTC-USDT"], {
+    spawnImpl: capturingSpawn,
+  });
+  assert.deepEqual(capturedArgs, ["--json", "market", "ticker", "BTC-USDT"]);
+});
 ```
 
 - [ ] **Step 2: Run tests — expect all passing**
