@@ -17,6 +17,20 @@ openclaw gateway restart
 openclaw plugins install github.com/mychaint/okx-trade-tg-miniapp
 ```
 
+## Running tests
+
+Unit tests (no openclaw gateway needed):
+
+```
+npm test
+```
+
+End-to-end smoke test (requires openclaw gateway running with this plugin link-installed):
+
+```
+./scripts/smoke.sh
+```
+
 ## Design
 
 - Runs in the `main` agent as a stateless tool.
