@@ -140,3 +140,33 @@ test("GET /api/market/candles clamps limit to max 300", async () => {
   await route.handler(fakeReq("/api/market/candles?instId=BTC-USDT&limit=9999"), res);
   assert.deepEqual(calls, [["market", "candles", "BTC-USDT", "--bar", "1H", "--limit", "300"]]);
 });
+
+test("?env=demo routes call invoker with demo=true", async () => {
+  const seenOpts = [];
+  const invoker = async (_args, opts = {}) => { seenOpts.push(opts); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker?instId=BTC-USDT&env=demo"), res);
+  assert.equal(seenOpts[0]?.demo, true);
+});
+
+test("?env=live routes call invoker with demo=false", async () => {
+  const seenOpts = [];
+  const invoker = async (_args, opts = {}) => { seenOpts.push(opts); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker?instId=BTC-USDT&env=live"), res);
+  assert.equal(seenOpts[0]?.demo, false);
+});
+
+test("no env query passes no demo flag", async () => {
+  const seenOpts = [];
+  const invoker = async (_args, opts = {}) => { seenOpts.push(opts); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/ticker");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/ticker?instId=BTC-USDT"), res);
+  assert.equal(seenOpts[0]?.demo, undefined);
+});

@@ -17,6 +17,13 @@ function parseQuery(url) {
   }
 }
 
+function demoFromQuery(q) {
+  const v = q.get("env");
+  if (v === "demo") return true;
+  if (v === "live") return false;
+  return undefined;
+}
+
 function runWithInvoker(handler) {
   return async (req, res) => {
     try {
@@ -55,7 +62,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
-        const data = await invoker(["market", "instruments", "--instType", instType]);
+        const data = await invoker(["market", "instruments", "--instType", instType], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
     },
@@ -68,7 +75,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           writeJson(res, 400, { ok: false, error: "missing_param", message: "instId is required" });
           return;
         }
-        const data = await invoker(["market", "ticker", instId]);
+        const data = await invoker(["market", "ticker", instId], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
     },
@@ -81,7 +88,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           writeJson(res, 400, { ok: false, error: "invalid_param", message: "instType must be SPOT|SWAP|FUTURES|OPTION" });
           return;
         }
-        const data = await invoker(["market", "tickers", "--instType", instType]);
+        const data = await invoker(["market", "tickers", "--instType", instType], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
     },
@@ -101,7 +108,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
         }
         const rawLimit = Number.parseInt(q.get("limit") ?? String(DEFAULT_LIMIT), 10);
         const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), MAX_LIMIT) : DEFAULT_LIMIT;
-        const data = await invoker(["market", "candles", instId, "--bar", bar, "--limit", String(limit)]);
+        const data = await invoker(["market", "candles", instId, "--bar", bar, "--limit", String(limit)], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
     },
