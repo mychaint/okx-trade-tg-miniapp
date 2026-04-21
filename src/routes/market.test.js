@@ -190,3 +190,13 @@ test("GET /api/market/tickers with invalid instType returns error: invalid_param
   assert.equal(res.statusCode, 400);
   assert.equal(JSON.parse(res.body).error, "invalid_param");
 });
+
+test("GET /api/market/candles requires instId", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/candles");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/candles"), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "missing_param");
+});

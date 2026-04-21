@@ -2,7 +2,7 @@
 
 Telegram Mini App plugin for [openclaw](https://github.com/openclaw/openclaw). Surfaces OKX market data and personal positions inside a Telegram chat, backed by `@okx_ai/okx-trade-cli`.
 
-**Status:** Phase 0 scaffolding. Not usable yet.
+**Status:** Phase 1a — market data backend routes complete (instruments / ticker / tickers / candles / meta / ping). 24 unit tests + smoke script. Frontend (Phase 1b), auth, positions, and Cloudflare Tunnel setup are not yet implemented.
 
 ## Install (development)
 

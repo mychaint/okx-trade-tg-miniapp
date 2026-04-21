@@ -62,6 +62,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
+        // OKX CLI quirk: `okx market instruments` requires the --instType FLAG, whereas `okx market tickers` takes a POSITIONAL arg. Do not "normalize" this.
         const data = await invoker(["market", "instruments", "--instType", instType], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
