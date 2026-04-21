@@ -440,7 +440,6 @@ function runWithInvoker(handler) {
           ok: false,
           error: "okx_cli_error",
           message: err.message,
-          stderr: err.stderr,
         });
       } else {
         writeJson(res, 500, {
