@@ -4,6 +4,12 @@
   "description": "Telegram Mini App plugin for OKX trading dashboards inside openclaw.",
   "type": "module",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test 'src/**/*.test.js'"
+  },
   "license": "MIT",
   "openclaw": {
     "extensions": [
