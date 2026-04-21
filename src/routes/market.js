@@ -92,7 +92,7 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
-        const data = await invoker(["market", "tickers", "--instType", instType], { demo: demoFromQuery(q) });
+        const data = await invoker(["market", "tickers", instType], { demo: demoFromQuery(q) });
         writeJson(res, 200, { ok: true, data });
       }),
     },
