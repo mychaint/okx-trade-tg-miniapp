@@ -3,6 +3,11 @@ import { OkxCliError } from "../okx/invoke.js";
 
 const VALID_INST_TYPES = new Set(["SPOT", "SWAP", "FUTURES", "OPTION"]);
 
+const VALID_BARS = new Set(["1m", "3m", "5m", "15m", "30m", "1H", "2H", "4H", "6H", "12H", "1D", "1W", "1M"]);
+const MAX_LIMIT = 300;
+const DEFAULT_LIMIT = 300;
+const DEFAULT_BAR = "1H";
+
 function parseQuery(url) {
   try {
     const u = new URL(url, "http://local");
@@ -77,6 +82,26 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
           return;
         }
         const data = await invoker(["market", "tickers", "--instType", instType]);
+        writeJson(res, 200, { ok: true, data });
+      }),
+    },
+    {
+      path: `${basePath}/candles`,
+      handler: runWithInvoker(async (req, res) => {
+        const q = parseQuery(req.url);
+        const instId = q.get("instId");
+        if (!instId) {
+          writeJson(res, 400, { ok: false, error: "missing_param", message: "instId is required" });
+          return;
+        }
+        const bar = q.get("bar") ?? DEFAULT_BAR;
+        if (!VALID_BARS.has(bar)) {
+          writeJson(res, 400, { ok: false, error: "invalid_param", message: `bar must be one of ${[...VALID_BARS].join(",")}` });
+          return;
+        }
+        const rawLimit = Number.parseInt(q.get("limit") ?? String(DEFAULT_LIMIT), 10);
+        const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), MAX_LIMIT) : DEFAULT_LIMIT;
+        const data = await invoker(["market", "candles", instId, "--bar", bar, "--limit", String(limit)]);
         writeJson(res, 200, { ok: true, data });
       }),
     },

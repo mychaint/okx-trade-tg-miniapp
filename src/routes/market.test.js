@@ -100,3 +100,43 @@ test("GET /api/market/ticker surfaces OKX errors as 502", async () => {
   assert.equal(body.ok, false);
   assert.equal(body.error, "okx_cli_error");
 });
+
+test("GET /api/market/candles forwards instId, bar, limit", async () => {
+  const calls = [];
+  const invoker = async (args) => { calls.push(args); return [["1700000000000", "70000"]]; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/candles");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/candles?instId=BTC-USDT&bar=1H&limit=300"), res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calls, [["market", "candles", "BTC-USDT", "--bar", "1H", "--limit", "300"]]);
+});
+
+test("GET /api/market/candles uses default bar=1H limit=300", async () => {
+  const calls = [];
+  const invoker = async (args) => { calls.push(args); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/candles");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/candles?instId=BTC-USDT"), res);
+  assert.deepEqual(calls, [["market", "candles", "BTC-USDT", "--bar", "1H", "--limit", "300"]]);
+});
+
+test("GET /api/market/candles rejects bar not in allowlist", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/candles");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/candles?instId=BTC-USDT&bar=7S"), res);
+  assert.equal(res.statusCode, 400);
+});
+
+test("GET /api/market/candles clamps limit to max 300", async () => {
+  const calls = [];
+  const invoker = async (args) => { calls.push(args); return []; };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/candles");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/candles?instId=BTC-USDT&limit=9999"), res);
+  assert.deepEqual(calls, [["market", "candles", "BTC-USDT", "--bar", "1H", "--limit", "300"]]);
+});
