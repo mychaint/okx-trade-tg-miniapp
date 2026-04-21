@@ -85,7 +85,7 @@ test("GET /api/market/tickers?instType=SPOT calls okx market tickers", async () 
   const res = fakeRes();
   await route.handler(fakeReq("/api/market/tickers?instType=SPOT"), res);
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(calls, [["market", "tickers", "--instType", "SPOT"]]);
+  assert.deepEqual(calls, [["market", "tickers", "SPOT"]]);
 });
 
 test("GET /api/market/ticker surfaces OKX errors as 502", async () => {

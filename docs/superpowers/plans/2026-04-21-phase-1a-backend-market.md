@@ -530,7 +530,7 @@ test("GET /api/market/tickers?instType=SPOT calls okx market tickers", async () 
   const res = fakeRes();
   await route.handler(fakeReq("/api/market/tickers?instType=SPOT"), res);
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(calls, [["market", "tickers", "--instType", "SPOT"]]);
+  assert.deepEqual(calls, [["market", "tickers", "SPOT"]]);
 });
 
 test("GET /api/market/ticker surfaces OKX errors as 502", async () => {
@@ -602,7 +602,7 @@ Add two entries inside the array returned by `createMarketRoutes` (after `instru
           writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
-        const data = await invoker(["market", "tickers", "--instType", instType]);
+        const data = await invoker(["market", "tickers", instType]);
         writeJson(res, 200, { ok: true, data });
       }),
     },
