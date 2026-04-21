@@ -170,3 +170,23 @@ test("no env query passes no demo flag", async () => {
   await route.handler(fakeReq("/api/market/ticker?instId=BTC-USDT"), res);
   assert.equal(seenOpts[0]?.demo, undefined);
 });
+
+test("GET /api/market/tickers without instType returns error: missing_param", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/tickers");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/tickers"), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "missing_param");
+});
+
+test("GET /api/market/tickers with invalid instType returns error: invalid_param", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/tickers");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/tickers?instType=XYZ"), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "invalid_param");
+});

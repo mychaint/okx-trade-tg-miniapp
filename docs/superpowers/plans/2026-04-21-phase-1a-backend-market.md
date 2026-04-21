@@ -545,6 +545,26 @@ test("GET /api/market/ticker surfaces OKX errors as 502", async () => {
   assert.equal(body.ok, false);
   assert.equal(body.error, "okx_cli_error");
 });
+
+test("GET /api/market/tickers without instType returns error: missing_param", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/tickers");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/tickers"), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "missing_param");
+});
+
+test("GET /api/market/tickers with invalid instType returns error: invalid_param", async () => {
+  const invoker = async () => { throw new Error("nope"); };
+  const routes = createMarketRoutes({ invoker, basePath: "/api/market" });
+  const route = findRoute(routes, "/api/market/tickers");
+  const res = fakeRes();
+  await route.handler(fakeReq("/api/market/tickers?instType=XYZ"), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "invalid_param");
+});
 ```
 
 - [ ] **Step 2: Run tests — failing**
@@ -574,8 +594,12 @@ Add two entries inside the array returned by `createMarketRoutes` (after `instru
       handler: runWithInvoker(async (req, res) => {
         const q = parseQuery(req.url);
         const instType = q.get("instType");
-        if (!instType || !VALID_INST_TYPES.has(instType)) {
-          writeJson(res, 400, { ok: false, error: "invalid_param", message: "instType must be SPOT|SWAP|FUTURES|OPTION" });
+        if (!instType) {
+          writeJson(res, 400, { ok: false, error: "missing_param", message: "instType is required" });
+          return;
+        }
+        if (!VALID_INST_TYPES.has(instType)) {
+          writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
         const data = await invoker(["market", "tickers", "--instType", instType]);

@@ -84,8 +84,12 @@ export function createMarketRoutes({ invoker, basePath = "/api/market" }) {
       handler: runWithInvoker(async (req, res) => {
         const q = parseQuery(req.url);
         const instType = q.get("instType");
-        if (!instType || !VALID_INST_TYPES.has(instType)) {
-          writeJson(res, 400, { ok: false, error: "invalid_param", message: "instType must be SPOT|SWAP|FUTURES|OPTION" });
+        if (!instType) {
+          writeJson(res, 400, { ok: false, error: "missing_param", message: "instType is required" });
+          return;
+        }
+        if (!VALID_INST_TYPES.has(instType)) {
+          writeJson(res, 400, { ok: false, error: "invalid_param", message: `instType must be one of ${[...VALID_INST_TYPES].join(",")}` });
           return;
         }
         const data = await invoker(["market", "tickers", "--instType", instType], { demo: demoFromQuery(q) });
